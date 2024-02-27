@@ -90,13 +90,13 @@ namespace CourseWork.Controllers
             var skill = await _context.Skills.FindAsync(id);
             if (skill == null)
             {
-                return NotFound();
+                return NotFound($"Skill ID: {id} not found");
             }
 
             _context.Skills.Remove(skill);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok($"Skill ID: {id}, Deleted successfully");
         }
 
         private bool SkillExists(int? id)
