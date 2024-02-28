@@ -13,6 +13,6 @@ namespace CourseWork.Models
         public DbSet<Skill> Skills { get; set; }
         public DbSet<Staff> Staffs { get; set; }
         public DbSet<StaffSkill> StaffSkills { get; set; }
-        public DbSet<Role> Roles { get; set; }
+        public DbSet<Function> Functions { get; set; }
     }
 }

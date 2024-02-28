@@ -83,7 +83,7 @@ namespace CourseWork.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Roles",
+                name: "Functions",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
@@ -141,12 +141,12 @@ namespace CourseWork.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Roles_ProjectId",
-                table: "Roles",
+                table: "Functions",
                 column: "ProjectId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Roles_StaffId",
-                table: "Roles",
+                table: "Functions",
                 column: "StaffId");
 
             migrationBuilder.CreateIndex(
@@ -169,7 +169,7 @@ namespace CourseWork.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Roles");
+                name: "Functions");
 
             migrationBuilder.DropTable(
                 name: "StaffSkills");

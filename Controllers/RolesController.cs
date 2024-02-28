@@ -1,107 +1,259 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using CourseWork.Models;
+using Microsoft.AspNetCore.Http; 
 
-namespace CourseWork.Controllers
-{
-    [Route("api/[controller]")]
-    [ApiController]
-    public class RolesController : ControllerBase
-    {
-        private readonly OrganisationContext _context;
+using Microsoft.AspNetCore.Mvc; 
 
-        public RolesController(OrganisationContext context)
-        {
-            _context = context;
-        }
+using Microsoft.AspNetCore.Identity; 
 
-        // GET: api/Roles
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Role>>> GetRoles()
-        {
-            return await _context.Roles.ToListAsync();
-        }
+using System; 
 
-        // GET: api/Roles/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Role>> GetRole(int? id)
-        {
-            var role = await _context.Roles.FindAsync(id);
+using System.Collections.Generic; 
 
-            if (role == null)
-            {
-                return NotFound();
-            }
+using System.Linq; 
 
-            return role;
-        }
+using System.Threading.Tasks; 
 
-        // PUT: api/Roles/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutRole(int? id, Role role)
-        {
-            if (id != role.Id)
-            {
-                return BadRequest();
-            }
+using CourseWork.Models; 
 
-            _context.Entry(role).State = EntityState.Modified;
+using Microsoft.AspNetCore.Authorization; 
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!RoleExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+  
 
-            return NoContent();
-        }
+namespace CourseWork.Controllers 
 
-        // POST: api/Roles
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Role>> PostRole(Role role)
-        {
-            _context.Roles.Add(role);
-            await _context.SaveChangesAsync();
+{ 
 
-            return CreatedAtAction("GetRole", new { id = role.Id }, role);
-        }
+    [Route("api/[controller]")] 
 
-        // DELETE: api/Roles/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteRole(int? id)
-        {
-            var role = await _context.Roles.FindAsync(id);
-            if (role == null)
-            {
-                return NotFound();
-            }
+    [ApiController] 
 
-            _context.Roles.Remove(role);
-            await _context.SaveChangesAsync();
+    [Authorize(Roles = "Admin")] 
 
-            return NoContent();
-        }
+    public class RolesController : ControllerBase 
 
-        private bool RoleExists(int? id)
-        {
-            return _context.Roles.Any(e => e.Id == id);
-        }
-    }
-}
+    { 
+
+        private readonly RoleManager<IdentityRole> _roleManager; 
+
+        private readonly UserManager<IdentityUser> _userManager; 
+
+  
+
+        public RolesController(RoleManager<IdentityRole> roleManager, UserManager<IdentityUser> userManager) 
+
+        { 
+
+            _roleManager = roleManager; 
+
+            _userManager = userManager; 
+
+        } 
+
+  
+
+        [HttpGet] 
+
+        public IActionResult GetRoles() 
+
+        { 
+
+            var roles = _roleManager.Roles.ToList(); 
+
+            return Ok(roles); 
+
+        } 
+
+  
+
+        [HttpGet("{roleId}")] 
+
+        public async Task<IActionResult> GetRole(string roleId) 
+
+        { 
+
+            var role = await _roleManager.FindByIdAsync(roleId); 
+
+  
+
+            if (role == null) 
+
+            { 
+
+                return NotFound("Role not found."); 
+
+            } 
+
+  
+
+            return Ok(role); 
+
+        } 
+
+  
+
+        [HttpPost] 
+
+        public async Task<IActionResult> CreateRole([FromBody] string roleName) 
+
+        { 
+
+            var role = new IdentityRole(roleName); 
+
+            var result = await _roleManager.CreateAsync(role); 
+
+  
+
+            if (result.Succeeded) 
+
+            { 
+
+                return Ok("Role created successfully."); 
+
+            } 
+
+  
+
+            return BadRequest(result.Errors); 
+
+        } 
+
+  
+
+        [HttpPut] 
+
+        public async Task<IActionResult> UpdateRole([FromBody] UpdateRoleModel model) 
+
+        { 
+
+            var role = await _roleManager.FindByIdAsync(model.RoleId); 
+
+  
+
+            if (role == null) 
+
+            { 
+
+                return NotFound("Role not found."); 
+
+            } 
+
+  
+
+            role.Name = model.NewRoleName; 
+
+            var result = await _roleManager.UpdateAsync(role); 
+
+  
+
+            if (result.Succeeded) 
+
+            { 
+
+                return Ok("Role updated successfully."); 
+
+            } 
+
+  
+
+            return BadRequest(result.Errors); 
+
+        } 
+
+  
+
+        [HttpDelete] 
+
+        public async Task<IActionResult> DeleteRole(string roleId) 
+
+        { 
+
+            var role = await _roleManager.FindByIdAsync(roleId); 
+
+  
+
+            if (role == null) 
+
+            { 
+
+                return NotFound("Role not found."); 
+
+            } 
+
+  
+
+            var result = await _roleManager.DeleteAsync(role); 
+
+  
+
+            if (result.Succeeded) 
+
+            { 
+
+                return Ok("Role deleted successfully."); 
+
+            } 
+
+  
+
+            return BadRequest(result.Errors); 
+
+        } 
+
+  
+
+        [HttpPost("assign-role-to-user")] 
+
+        public async Task<IActionResult> AssignRoleToUser([FromBody] AssignRoleModel model) 
+
+        { 
+
+            var user = await _userManager.FindByIdAsync(model.UserId); 
+
+  
+
+            if (user == null) 
+
+            { 
+
+                return NotFound("User not found."); 
+
+            } 
+
+  
+
+            var roleExists = await _roleManager.RoleExistsAsync(model.RoleName); 
+
+  
+
+            if (!roleExists) 
+
+            { 
+
+                return NotFound("Role not found."); 
+
+            } 
+
+  
+
+            var result = await _userManager.AddToRoleAsync(user, model.RoleName); 
+
+  
+
+            if (result.Succeeded) 
+
+            { 
+
+                return Ok("Role assigned to user successfully."); 
+
+            } 
+
+  
+
+            return BadRequest(result.Errors); 
+
+        } 
+
+  
+
+    } 
+
+} 

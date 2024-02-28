@@ -28,8 +28,6 @@ builder.Services.AddScoped<EmailService>();
 
 builder.Services.AddScoped<RolesController>(); 
 
-  
-
             builder.Services.AddAuthentication(options => 
 
             { 

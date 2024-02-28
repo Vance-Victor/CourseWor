@@ -65,7 +65,7 @@ namespace CourseWork.Migrations
                     b.ToTable("Projects");
                 });
 
-            modelBuilder.Entity("CourseWork.Models.Role", b =>
+            modelBuilder.Entity("CourseWork.Models.Function", b =>
                 {
                     b.Property<int?>("Id")
                         .ValueGeneratedOnAdd()
@@ -92,7 +92,7 @@ namespace CourseWork.Migrations
 
                     b.HasIndex("StaffId");
 
-                    b.ToTable("Roles");
+                    b.ToTable("Functions");
                 });
 
             modelBuilder.Entity("CourseWork.Models.Skill", b =>
@@ -173,7 +173,7 @@ namespace CourseWork.Migrations
                     b.Navigation("Department");
                 });
 
-            modelBuilder.Entity("CourseWork.Models.Role", b =>
+            modelBuilder.Entity("CourseWork.Models.Function", b =>
                 {
                     b.HasOne("CourseWork.Models.Project", "Project")
                         .WithMany()

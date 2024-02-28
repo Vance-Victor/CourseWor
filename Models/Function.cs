@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace CourseWork.Models
 {
-    public class Role
+    public class Function
     {
         public int? Id { get; set; }
         public string? Name { get; set; }
