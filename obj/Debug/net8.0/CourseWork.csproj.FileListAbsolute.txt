@@ -283,3 +283,6 @@
 /Users/mac/Desktop/Semester_2/Web_App_Development/CourseWork/bin/Debug/net8.0/Microsoft.Extensions.Identity.Core.dll
 /Users/mac/Desktop/Semester_2/Web_App_Development/CourseWork/bin/Debug/net8.0/Microsoft.Extensions.Identity.Stores.dll
 /Users/mac/Desktop/Semester_2/Web_App_Development/CourseWork/bin/Debug/net8.0/Microsoft.Extensions.Options.dll
+/Users/mac/Desktop/Semester_2/Web_App_Development/CourseWork/bin/Debug/net8.0/BouncyCastle.Cryptography.dll
+/Users/mac/Desktop/Semester_2/Web_App_Development/CourseWork/bin/Debug/net8.0/MailKit.dll
+/Users/mac/Desktop/Semester_2/Web_App_Development/CourseWork/bin/Debug/net8.0/MimeKit.dll

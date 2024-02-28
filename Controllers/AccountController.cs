@@ -6,13 +6,25 @@ using Microsoft.AspNetCore.Identity;
 
 using Microsoft.AspNetCore.Mvc; 
 
+using Microsoft.Extensions.Configuration; 
+
+using Microsoft.IdentityModel.Tokens; 
+
 using System; 
 
 using System.Collections.Generic; 
 
+using System.IdentityModel.Tokens.Jwt; 
+
 using System.Linq; 
 
+using System.Security.Claims; 
+
+using System.Text; 
+
 using System.Threading.Tasks; 
+
+  
 
 namespace CourseWork.Controllers 
 
@@ -20,128 +32,240 @@ namespace CourseWork.Controllers
 
     [Route("api/[controller]")] 
 
-[ApiController] 
+    [ApiController] 
 
-public class AccountController : ControllerBase 
+    public class AccountController : ControllerBase 
 
-{ 
+    { 
 
-private readonly UserManager<IdentityUser> _userManager; 
+        private readonly UserManager<IdentityUser> _userManager; 
 
-private readonly SignInManager<IdentityUser> _signInManager; 
+        private readonly SignInManager<IdentityUser> _signInManager; 
 
-private readonly EmailService _emailService; 
+        private readonly EmailService _emailService; 
 
-public AccountController(UserManager<IdentityUser> userManager, 
-
-SignInManager<IdentityUser> signInManager, EmailService emailService) 
-
-{ 
-
-_userManager = userManager; 
-
-_signInManager = signInManager; 
-
-_emailService = emailService; 
-
-} 
-
-[HttpPost("register")] 
-
-public async Task<IActionResult> Register(AuthModel model) 
-
-{ 
-
-var user = new IdentityUser { UserName = model.Email, Email = model.Email }; 
-
-var result = await _userManager.CreateAsync(user, model.Password); 
-
-if (result.Succeeded) 
-
-{ 
-
-// Generate an email verification token 
-
-var token = await _userManager.GenerateEmailConfirmationTokenAsync(user); 
-
-// Create the verification link 
-
-var verificationLink = Url.Action("VerifyEmail", "Account", new { userId = user.Id, token = 
-
-token }, Request.Scheme); 
-
-// Send the verification email 
-
-var emailSubject = "Email Verification"; 
-
-var emailBody = $"Please verify your email by clicking the following link: {verificationLink}"; 
-
-_emailService.SendEmail(user.Email, emailSubject, emailBody); 
+        private readonly IConfiguration _configuration; 
 
   
 
-return Ok("User registered successfully. An email verification link has been sent."); 
+        public AccountController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, EmailService emailService, IConfiguration configuration) 
 
-} 
+        { 
 
-return BadRequest(result.Errors); 
+            _userManager = userManager; 
 
-} 
+            _signInManager = signInManager; 
 
-// Add an action to handle email verification 
+            _emailService = emailService; 
 
-[HttpGet("verify-email")] 
+            _configuration = configuration; 
 
-public async Task<IActionResult> VerifyEmail(string userId, string token) 
+        } 
 
-{ 
+  
 
-var user = await _userManager.FindByIdAsync(userId); 
+        [HttpPost("register")] 
 
-if (user == null) 
+        public async Task<IActionResult> Register(AuthModel model) 
 
-{ 
+        { 
 
-return NotFound("User not found."); 
+            var user = new IdentityUser { UserName = model.Email, Email = model.Email }; 
 
-} 
+            var result = await _userManager.CreateAsync(user, model.Password); 
 
-var result = await _userManager.ConfirmEmailAsync(user, token); 
+  
 
-if (result.Succeeded) 
+            if (result.Succeeded) 
 
-{ 
+            { 
 
-return Ok("Email verification successful."); 
+                // Generate an email verification token 
 
-} 
+                var token = await _userManager.GenerateEmailConfirmationTokenAsync(user); 
 
-return BadRequest("Email verification failed."); 
+  
 
-} 
+                // Create the verification link 
 
-[HttpPost("login")] 
+                var verificationLink = Url.Action("VerifyEmail", "Account", new { userId = user.Id, token = token }, Request.Scheme); 
 
-public async Task<IActionResult> Login(AuthModel model) 
+  
 
-{ 
+                // Send the verification email 
 
-var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, 
+                var emailSubject = "Email Verification"; 
 
-isPersistent: false, lockoutOnFailure: false); 
+                var emailBody = $"Please verify your email by clicking the following link: {verificationLink}"; 
 
-if (result.Succeeded) 
+                _emailService.SendEmail(user.Email, emailSubject, emailBody); 
 
-{ 
+                
 
-return Ok("Login successful."); 
+                return Ok("User registered successfully. An email verification link has been sent."); 
 
-} 
+            } 
 
-return Unauthorized("Invalid login attempt."); 
+  
 
-} 
+            return BadRequest(result.Errors); 
 
-} 
+        } 
+
+  
+
+  
+
+        // Add an action to handle email verification 
+
+        [HttpGet("verify-email")] 
+
+        public async Task<IActionResult> VerifyEmail(string userId, string token) 
+
+        { 
+
+            var user = await _userManager.FindByIdAsync(userId); 
+
+  
+
+            if (user == null) 
+
+            { 
+
+                return NotFound("User not found."); 
+
+            } 
+
+  
+
+            var result = await _userManager.ConfirmEmailAsync(user, token); 
+
+  
+
+            if (result.Succeeded) 
+
+            { 
+
+                return Ok("Email verification successful."); 
+
+            } 
+
+  
+
+            return BadRequest("Email verification failed."); 
+
+        } 
+
+  
+
+  
+
+  
+
+        [HttpPost("login")] 
+
+        public async Task<IActionResult> Login(AuthModel model) 
+
+        { 
+
+            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: false, lockoutOnFailure: false); 
+
+  
+
+            if (result.Succeeded) 
+
+            { 
+
+                var user = await _userManager.FindByEmailAsync(model.Email); 
+
+                var roles = await _userManager.GetRolesAsync(user); 
+
+                var token = GenerateJwtToken(user,roles); 
+
+                return Ok(new { Token = token }); 
+
+            } 
+
+  
+
+            return Unauthorized("Invalid login attempt."); 
+
+        } 
+
+  
+
+        [HttpPost("logout")] 
+
+        public async Task<IActionResult> Logout() 
+
+        { 
+
+            await _signInManager.SignOutAsync(); 
+
+            return Ok("Logged out"); 
+
+        } 
+
+        private string GenerateJwtToken(IdentityUser user, IList<string> roles) 
+
+        { 
+
+            var claims = new List<Claim> 
+
+            { 
+
+                new Claim(JwtRegisteredClaimNames.Sub, user.Email), 
+
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()), 
+
+            }; 
+
+  
+
+            // Add roles as claims 
+
+            foreach (var role in roles) 
+
+            { 
+
+                claims.Add(new Claim(ClaimTypes.Role, role)); 
+
+            } 
+
+  
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"])); 
+
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256); 
+
+            var expires = DateTime.Now.AddHours(Convert.ToDouble(_configuration["Jwt:ExpireHours"])); 
+
+  
+
+            var token = new JwtSecurityToken( 
+
+                _configuration["Jwt:Issuer"], 
+
+                _configuration["Jwt:Issuer"], 
+
+                claims, 
+
+                expires: expires, 
+
+                signingCredentials: creds 
+
+            ); 
+
+  
+
+            return new JwtSecurityTokenHandler().WriteToken(token); 
+
+        } 
+
+  
+
+    } 
+
+  
 
 } 
