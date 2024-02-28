@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace CourseWork.Models
 {
     public class Skill
@@ -8,6 +10,7 @@ namespace CourseWork.Models
         public string? Description { get; set; }
 
 
+        [JsonIgnore]
         public List<StaffSkill>? staffSkills {get; set;}
     }
 }

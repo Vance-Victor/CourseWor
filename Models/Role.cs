@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace CourseWork.Models
 {
     public class Role
@@ -6,7 +8,11 @@ namespace CourseWork.Models
         public string? Name { get; set; }
         public string? Description { get; set; }
         public string? Responsibility { get; set; }
+
+        [JsonIgnore]
         public Project? Project { get; set; }
+
+        [JsonIgnore]
         public Staff? Staff { get; set; }
     }
 }
