@@ -35,10 +35,11 @@ Skill Assignment:  Ability to associate skills with staff members using the Staf
 Technologies Used: 
 
 Programming Language: Implementation using C#. 
+Database: Sqllite.
 
-Framework: Developed using .NET Core, a cross-platform, high-performance framework for building modern, cloud-based, and internet-connected applications. 
+Framework: Developed using .NET Core. 
 
-RESTful API: Implementation of a RESTful API architecture to expose endpoints for interacting with the backend service. 
+RESTful API: Implementation of a RESTful API architecture. 
 
 Entity Framework: Utilizes Entity Framework Core for object-relational mapping (ORM), simplifying database interactions and providing a seamless integration with the C# application. 
 
